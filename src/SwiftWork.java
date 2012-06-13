@@ -64,11 +64,15 @@ public class SwiftWork {
 		return randfilename;
 			
 	}
+	
+	public void cleanForGet(){
+		
+	}
 
 	
 	private FilesClient swiftLogin() {
 		//TODO: read these from the configuration file.
-		client = new FilesClient("admin:admin", "admin", "http://158.38.172.243:8080/auth/v1.0");
+		client = new FilesClient(dataObject.getUsername(), dataObject.getPassword(), dataObject.getAuthUrl());
 		boolean success;
 		try {
 			success = client.login();
@@ -296,6 +300,24 @@ public class SwiftWork {
 	    int exp = (int) (Math.log(bytes) / Math.log(unit));
 	    String pre = (si ? "kMGTPE" : "KMGTPE").charAt(exp-1) + (si ? "" : "i");
 	    return String.format("%.1f %sB", bytes / Math.pow(unit, exp), pre);
+	}
+	
+	/**
+	 * 
+	 * @param byteps byte per second
+	 * @return Mega bit per second
+	 */
+	public static double convertRateToMbps(double byteps){
+		return (byteps * 8) / (1024 * 1024);
+	}
+	
+	/**
+	 * 
+	 * @param byteps byte per second
+	 * @return Kilo bit per second
+	 */
+	public static double convertRateToKbps(double byteps){
+		return (byteps * 8) / (1024);
 	}
 	
 	// Utils

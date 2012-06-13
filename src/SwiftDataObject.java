@@ -15,6 +15,8 @@
 
 public class SwiftDataObject {
 	private long fileSize = -1;
+	private String username, password, authUrl, container;
+	
 	
 
 	public SwiftDataObject() {
@@ -36,6 +38,46 @@ public class SwiftDataObject {
 	 */
 	public void setFileSize(long fileSize) {
 		this.fileSize = fileSize;
+	}
+
+
+	public String getAuthUrl() {
+		return authUrl;
+	}
+
+
+	public void setAuthUrl(String authUrl) {
+		this.authUrl = authUrl;
+	}
+
+
+	public String getPassword() {
+		return password;
+	}
+
+
+	public void setPassword(String password) {
+		this.password = password;
+	}
+
+
+	public String getUsername() {
+		return username;
+	}
+
+
+	public void setUsername(String username) {
+		this.username = username;
+	}
+
+
+	public String getContainer() {
+		return container;
+	}
+
+
+	public void setContainer(String container) {
+		this.container = container;
 	}
 	
 }

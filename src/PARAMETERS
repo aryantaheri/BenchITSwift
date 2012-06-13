@@ -60,22 +60,32 @@ BENCHIT_KERNEL_LINEAR_INC_VALUE=3
  
  # Unit of the file size shown in the plot
  # "" -> Byte;"K" -> KByte;"M" -> MByte;"G"=GByte 
- BENCHIT_KERNEL_VIEW_UNIT_FILESIZE="K"
+BENCHIT_KERNEL_VIEW_UNIT_FILESIZE="K"
  
  # Unit of the measured rate shown in the plot 
  # "" -> Byte;"K" -> KByte;"M" -> MByte;"G"=GByte 
- BENCHIT_KERNEL_VIEW_UNIT_RATE="M"
+BENCHIT_KERNEL_VIEW_UNIT_RATE="M"
  
  # Number of runs per measurement
- BENCHIT_KERNEL_NUMBER_RUNS=2
+BENCHIT_KERNEL_NUMBER_RUNS=2
+
  
- # Remove temporary saved files
- # 0 -> remove files after every run
- # 1 -> remove files after the last run of a measurement
- BENCHIT_REMOVE_TEMP=1
+#####################################
+# Other parameters	 				#
+#####################################
+# Verify file checksum for each operation
+# 0 -> No, 1 -> Yes
+BENCHIT_VERIFY_CHECKSUM=1
+ 
+# Remove temporary saved files
+# 0 -> don't remove
+# 1 -> remove files after each run
+# 2 -> remove files when the measurement is done
+BENCHIT_REMOVE_LOCAL_TEMP=0
+BENCHIT_REMOVE_REMOTE_TEMP=0
  
  # Additional filename string 
- BENCHIT_FILENAME_COMMENT="Swift"
+BENCHIT_FILENAME_COMMENT="Swift"
  
  # Path of the tool time
  BENCHIT_TOOL_TIME=/usr/bin/time

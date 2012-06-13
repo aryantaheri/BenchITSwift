@@ -57,6 +57,9 @@ public class SwiftGetKernelMain implements BIJavaKernel {
     * Swift parameter
     */
    private String SWIFT_CONTAINER;
+   private String SWIFT_USERNAME;
+   private String SWIFT_PASSWORD;
+   private String SWIFT_AUTH_URL;
    
    /**
     * The constructor.
@@ -107,7 +110,7 @@ public class SwiftGetKernelMain implements BIJavaKernel {
          info.log_yaxis[index1] = 0;
          info.base_yaxis[index1] = 0;
          // 2nd function
-         info.yaxistexts[index2] = "Transfer Rate in XX/s";
+         info.yaxistexts[index2] = "Transfer Rate in Byte/s";
          info.outlier_direction_upwards[index2] = 0;
          info.log_yaxis[index2] = 0;
          info.base_yaxis[index2] = 0;
@@ -126,7 +129,7 @@ public class SwiftGetKernelMain implements BIJavaKernel {
             case 0: // 1st version legend text; maybe (ijk) -- This should always happen.
             default:
                info.legendtexts[index1] = "TT in s";
-               info.legendtexts[index2] = "Rate in XX/s";
+               info.legendtexts[index2] = "Rate in Byte/s";
             /*########################################################*/
          }
       }
@@ -139,12 +142,14 @@ public class SwiftGetKernelMain implements BIJavaKernel {
     **/
    public Object bi_init( int problemsizemax ) {
       SwiftDataObject dataObject = new SwiftDataObject();
-      /* initialize your own arrays in here */
 /*
       dataObject.maxn = problemsizemax;
       dataObject.a = new double[problemsizemax * problemsizemax];
 */
-      
+      dataObject.setAuthUrl(SWIFT_AUTH_URL);
+      dataObject.setUsername(SWIFT_USERNAME);
+      dataObject.setPassword(SWIFT_PASSWORD);
+      dataObject.setContainer(SWIFT_CONTAINER);
       return (Object)dataObject;
    }
    /**
@@ -237,11 +242,14 @@ public class SwiftGetKernelMain implements BIJavaKernel {
          */
          /* B ########################################################*/
          // the xaxis value needs to be stored only once!
-         if ( j == 0 ) results[0] = (double)problemsize;
+         if ( j == 0 ) results[0] = FILE_SIZE_SERIES[problemsize - 1];
+         // time in seconds
          results[index1 + 1] = timeinsecs;
+         // rate in byte/s
          results[index2 + 1] = rate;
          /*########################################################*/
       }
+      
       return(0);
    }
    /**
@@ -291,6 +299,9 @@ SWIFT_CONTAINER="benchit_container"
 	LINEAR_INC_UNIT = rwe.bi_getEnv( "BENCHIT_KERNEL_LINEAR_INC_UNIT" );
 	LINEAR_INC_VALUE = new Integer(rwe.bi_getEnv( "BENCHIT_KERNEL_LINEAR_INC_VALUE" )).intValue();
 	
+	SWIFT_AUTH_URL = rwe.bi_getEnv( "SWIFT_AUTH_HOST" );
+	SWIFT_USERNAME = rwe.bi_getEnv( "SWIFT_USER" );
+	SWIFT_PASSWORD = rwe.bi_getEnv( "SWIFT_KEY" );
 	SWIFT_CONTAINER = rwe.bi_getEnv( "SWIFT_CONTAINER" );
 	
 	switch (INCREMENT_FUNCTION) {
