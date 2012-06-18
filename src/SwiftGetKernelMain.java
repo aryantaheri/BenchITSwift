@@ -40,6 +40,8 @@ public class SwiftGetKernelMain implements BIJavaKernel {
 //   private int STEPSIZE = 1;
    private BIEnvHash rwe = null;
    
+   private int NUMBER_RUNS = 1;
+   
    /**
     * File size parameters
     */
@@ -51,7 +53,17 @@ public class SwiftGetKernelMain implements BIJavaKernel {
    private String LINEAR_INC_UNIT;
    private int LINEAR_INC_VALUE;
    private long[] FILE_SIZE_SERIES;
+
+   /**
+    * View parameter
+    * Bit, Byte, Kilo, Mega, Giga, Tera
+    */
+   public enum SizeUnit {
+	   b, B, K, M, G, T; 
+   } 
    
+   SizeUnit FILE_SIZE_VIEW_UNIT = SizeUnit.B;
+   SizeUnit RATE_VIEW_UNIT = SizeUnit.b;
 
    /**
     * Swift parameter
@@ -75,10 +87,10 @@ public class SwiftGetKernelMain implements BIJavaKernel {
    public int bi_getinfo( InfoObject info ) {
       evaluate_environment();
       info.codesequence = "work_[1|2]()";
-      info.xaxistext = "File Size";
+      info.xaxistext = "File Size in " + FILE_SIZE_VIEW_UNIT + "Byte";
       info.log_xaxis = 0;
       info.base_xaxis = 0;
-      info.maxproblemsize = FILE_SIZE_SERIES.length;
+      info.maxproblemsize = FILE_SIZE_SERIES.length * NUMBER_RUNS;
       info.kernel_execs_mpi1 = 0;
       info.kernel_execs_mpi2 = 0;
       info.kernel_execs_pvm = 0;
@@ -110,7 +122,7 @@ public class SwiftGetKernelMain implements BIJavaKernel {
          info.log_yaxis[index1] = 0;
          info.base_yaxis[index1] = 0;
          // 2nd function
-         info.yaxistexts[index2] = "Transfer Rate in Byte/s";
+         info.yaxistexts[index2] = "Transfer Rate in " + RATE_VIEW_UNIT + "bps";
          info.outlier_direction_upwards[index2] = 0;
          info.log_yaxis[index2] = 0;
          info.base_yaxis[index2] = 0;
@@ -129,7 +141,7 @@ public class SwiftGetKernelMain implements BIJavaKernel {
             case 0: // 1st version legend text; maybe (ijk) -- This should always happen.
             default:
                info.legendtexts[index1] = "TT in s";
-               info.legendtexts[index2] = "Rate in Byte/s";
+               info.legendtexts[index2] = "Rate in " + RATE_VIEW_UNIT + "bps";
             /*########################################################*/
          }
       }
@@ -179,6 +191,9 @@ public class SwiftGetKernelMain implements BIJavaKernel {
       double rate = 0.0;
       /* Cast Object reference */
       SwiftDataObject dataObject = (SwiftDataObject)dObject;
+      
+      // Starting from 0
+      int currentFileSizeIndex =  ( (int) Math.floor((problemsize - 1)/NUMBER_RUNS)) ;
 
       /* calculate overhead if it is not done yet */
         if ( timeroverhead == 0.0 ) {
@@ -194,7 +209,10 @@ public class SwiftGetKernelMain implements BIJavaKernel {
       if ( results == null ) return 1;
       /* B ########################################################*/
       /* maybe some more init stuff in here */
-      dataObject.setFileSize(FILE_SIZE_SERIES[problemsize - 1]);
+      System.out.println();
+      System.out.println("== Processing: " + problemsize + ", File size: " + FILE_SIZE_SERIES[currentFileSizeIndex] + ", Index: " + currentFileSizeIndex + " ==");
+      System.out.println();
+      dataObject.setFileSize(FILE_SIZE_SERIES[currentFileSizeIndex]);
       SwiftWork work = new SwiftWork( dataObject );
       String filename = work.initForGet();
       /*########################################################*/
@@ -233,7 +251,7 @@ public class SwiftGetKernelMain implements BIJavaKernel {
          if ( timeinsecs < MINTIME ) timeinsecs = MINTIME;
 
          /* Calculate the transfer rate in Byte/s, avoiding division by zero */
-         rate = (double) FILE_SIZE_SERIES[problemsize - 1]/timeinsecs;
+         rate = (double) FILE_SIZE_SERIES[currentFileSizeIndex]/timeinsecs;
          
          /* store the results in results[1], results[2], ...
          * [1] for the first function, [2] for the second function
@@ -242,11 +260,11 @@ public class SwiftGetKernelMain implements BIJavaKernel {
          */
          /* B ########################################################*/
          // the xaxis value needs to be stored only once!
-         if ( j == 0 ) results[0] = FILE_SIZE_SERIES[problemsize - 1];
+         if ( j == 0 ) results[0] = SwiftWork.convertFileSize(FILE_SIZE_SERIES[currentFileSizeIndex], FILE_SIZE_VIEW_UNIT);
          // time in seconds
          results[index1 + 1] = timeinsecs;
          // rate in byte/s
-         results[index2 + 1] = rate;
+         results[index2 + 1] = SwiftWork.convertRateToXbps(rate, RATE_VIEW_UNIT);
          /*########################################################*/
       }
       
@@ -303,6 +321,12 @@ SWIFT_CONTAINER="benchit_container"
 	SWIFT_USERNAME = rwe.bi_getEnv( "SWIFT_USER" );
 	SWIFT_PASSWORD = rwe.bi_getEnv( "SWIFT_KEY" );
 	SWIFT_CONTAINER = rwe.bi_getEnv( "SWIFT_CONTAINER" );
+	
+	
+	NUMBER_RUNS = new Integer(rwe.bi_getEnv( "BENCHIT_KERNEL_NUMBER_RUNS" ));
+	
+	FILE_SIZE_VIEW_UNIT  = SizeUnit.valueOf(rwe.bi_getEnv( "BENCHIT_KERNEL_FILESIZE_VIEW_UNIT" ));
+	RATE_VIEW_UNIT  = SizeUnit.valueOf(rwe.bi_getEnv( "BENCHIT_KERNEL_RATE_VIEW_UNIT" ));
 	
 	switch (INCREMENT_FUNCTION) {
 	case 0:

@@ -11,13 +11,18 @@
  *******************************************************************/
 import java.io.File;
 import java.io.IOException;
-import java.io.RandomAccessFile;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import org.apache.http.HttpException;
 
-import com.rackspacecloud.client.cloudfiles.*;
+import com.rackspacecloud.client.cloudfiles.FilesAuthorizationException;
+import com.rackspacecloud.client.cloudfiles.FilesClient;
+import com.rackspacecloud.client.cloudfiles.FilesConstants;
+import com.rackspacecloud.client.cloudfiles.FilesContainerNotEmptyException;
+import com.rackspacecloud.client.cloudfiles.FilesException;
+import com.rackspacecloud.client.cloudfiles.FilesInvalidNameException;
+import com.rackspacecloud.client.cloudfiles.FilesNotFoundException;
 
 public class SwiftWork {
 	// constants
@@ -212,8 +217,10 @@ public class SwiftWork {
 	}
 	
 	public static void main(String[] args) throws IOException {
-		SwiftWork work = new SwiftWork(null);
-		generateRandomFile("1024", "8.0");
+//		SwiftWork work = new SwiftWork(null);
+		System.out.println(Math.floor(1/2));
+		System.out.println(new String[]{"a", "b"}[(int) Math.floor(5/4)]);
+//		generateRandomFile("1024", "8.0");
 //		toByte(5, "M");
 //		long[] s = generateLogarithmicFileSizeSeries(2, 10, "M", 1, "G");
 //		long[] s = generateLinearFileSizeSeries(30, "K", 1, "K", 10, "M");
@@ -302,23 +309,59 @@ public class SwiftWork {
 	    return String.format("%.1f %sB", bytes / Math.pow(unit, exp), pre);
 	}
 	
-	/**
-	 * 
-	 * @param byteps byte per second
-	 * @return Mega bit per second
-	 */
-	public static double convertRateToMbps(double byteps){
-		return (byteps * 8) / (1024 * 1024);
-	}
 	
 	/**
 	 * 
 	 * @param byteps byte per second
-	 * @return Kilo bit per second
+	 * @return X bit per second
 	 */
-	public static double convertRateToKbps(double byteps){
-		return (byteps * 8) / (1024);
+	public static double convertRateToXbps(double byteps, SwiftGetKernelMain.SizeUnit unit){
+		switch (unit) {
+		case b:
+			return (byteps * 8);
+			
+		case K:
+			return (byteps * 8) / (1024);
+			
+		case M:
+			return (byteps * 8) / (1024 * 1024);
+			
+		case G:
+			return (byteps * 8) / (1024 * 1024 * 1024);
+
+		default:
+			return byteps;
+		}
 	}
+	
+	/**
+	 * @param file size in byte
+	 * @return file size in unit
+	 */
+	public static double convertFileSize(double sizeInByte, SwiftGetKernelMain.SizeUnit unit){
+		switch (unit) {
+		case b:
+			return (sizeInByte * 8);
+			
+		case B:
+			return sizeInByte;
+			
+		case K:
+			return (sizeInByte) / (1024);
+			
+		case M:
+			return (sizeInByte) / (1024 * 1024);
+			
+		case G:
+			return (sizeInByte) / (1024 * 1024 * 1024);
+
+		default:
+			return sizeInByte;
+		}
+	}
+
+		
+	
 	
 	// Utils
 	private String generateContainerName(String addition) {
