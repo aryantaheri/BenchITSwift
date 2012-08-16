@@ -1,13 +1,12 @@
 #!/bin/sh
 #####################################################################
 # BenchIT - Performance Measurement for Scientific Applications
-# Contact: developer@benchit.org
+# Contact: aryan@uninett.no
 #
-# $Id: PARAMETERS 1 2009-09-11 12:26:19Z william $
-# $URL: svn+ssh://william@rupert.zih.tu-dresden.de/svn-base/benchit-root/BenchITv6/kernel/utilities/skeleton/Java/0/0/0/PARAMETERS $
+# $URL: https://github.com/aryantaheri/BenchITSwift
 # For license details see COPYING in the package base directory
 #####################################################################
-# Kernel: java kernel skeleton
+# Kernel: Swift Java kernel
 #####################################################################
 
  ######################################################################
@@ -81,8 +80,8 @@ BENCHIT_VERIFY_CHECKSUM=1
 # 0 -> don't remove
 # 1 -> remove files after each run
 # 2 -> remove files when the measurement is done
-BENCHIT_REMOVE_LOCAL_TEMP=0
-BENCHIT_REMOVE_REMOTE_TEMP=0
+BENCHIT_REMOVE_LOCAL_TEMP=2
+BENCHIT_REMOVE_REMOTE_TEMP=2
  
  # Additional filename string 
 BENCHIT_FILENAME_COMMENT="Swift"

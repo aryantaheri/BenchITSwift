@@ -41,6 +41,8 @@ public class SwiftGetKernelMain implements BIJavaKernel {
    private BIEnvHash rwe = null;
    
    private int NUMBER_RUNS = 1;
+   private int REMOVE_LOCAL_TEMP = 0;
+   private int REMOVE_REMOTE_TEMP = 0;
    
    /**
     * File size parameters
@@ -162,6 +164,7 @@ public class SwiftGetKernelMain implements BIJavaKernel {
       dataObject.setUsername(SWIFT_USERNAME);
       dataObject.setPassword(SWIFT_PASSWORD);
       dataObject.setContainer(SWIFT_CONTAINER);
+      dataObject.setMaxProblemSize(problemsizemax);
       return (Object)dataObject;
    }
    /**
@@ -245,6 +248,7 @@ public class SwiftGetKernelMain implements BIJavaKernel {
          timeinsecs = te - ts;
          timeinsecs -= timeroverhead;
 
+         work.cleanUp(REMOVE_LOCAL_TEMP, REMOVE_REMOTE_TEMP, filename, dataObject.getMaxProblemSize(), problemsize);
          
          /* check for divide by zero, if timeinsecs is zero
          * timeinsecs=0 means that our operation does not need any time! */
@@ -324,6 +328,10 @@ SWIFT_CONTAINER="benchit_container"
 	
 	
 	NUMBER_RUNS = new Integer(rwe.bi_getEnv( "BENCHIT_KERNEL_NUMBER_RUNS" ));
+	
+	REMOVE_LOCAL_TEMP = new Integer(rwe.bi_getEnv( "BENCHIT_REMOVE_LOCAL_TEMP" ));
+	REMOVE_REMOTE_TEMP = new Integer(rwe.bi_getEnv( "BENCHIT_REMOVE_REMOTE_TEMP" ));
+	
 	
 	FILE_SIZE_VIEW_UNIT  = SizeUnit.valueOf(rwe.bi_getEnv( "BENCHIT_KERNEL_FILESIZE_VIEW_UNIT" ));
 	RATE_VIEW_UNIT  = SizeUnit.valueOf(rwe.bi_getEnv( "BENCHIT_KERNEL_RATE_VIEW_UNIT" ));

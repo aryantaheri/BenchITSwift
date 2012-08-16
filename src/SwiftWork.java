@@ -9,7 +9,12 @@
 /* Kernel: java kernel skeleton
  * this file: the WORK algorithm
  *******************************************************************/
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -25,10 +30,14 @@ import com.rackspacecloud.client.cloudfiles.FilesInvalidNameException;
 import com.rackspacecloud.client.cloudfiles.FilesNotFoundException;
 
 public class SwiftWork {
-	// constants
+
+	
 	protected SwiftDataObject dataObject;
 	private FilesClient client;
 
+	final private static String LOCAL_TEMP_LOG_FILE = "local_temp_files.log";
+	final private static String REMOTE_TEMP_LOG_FILE = "remote_temp_files.log";
+	
 	public SwiftWork(SwiftDataObject dataObject) {
 		this.dataObject = dataObject;
 	}
@@ -76,7 +85,6 @@ public class SwiftWork {
 
 	
 	private FilesClient swiftLogin() {
-		//TODO: read these from the configuration file.
 		client = new FilesClient(dataObject.getUsername(), dataObject.getPassword(), dataObject.getAuthUrl());
 		boolean success;
 		try {
@@ -135,7 +143,7 @@ public class SwiftWork {
 	/**
 	 * Simple put
 	 * Assumptions:
-	 * 1- file is generate
+	 * 1- file is generated
 	 * 2- file's checksum is available
 	 * 3- connection is authenticated, and client is ready
 	 * 4- container is created
@@ -145,8 +153,9 @@ public class SwiftWork {
 	public String putFile(String container, String file, String mimeType){
 		String etag = null;
 		try {
-			etag = client.storeObject(container, new File(file), mimeType);
-			
+			File upload = new File(file);
+			etag = client.storeObject(container, upload, mimeType);
+			appendToRemoteTmpList(container + ":" + upload.getName(), true);
 		} catch (FilesException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
@@ -217,9 +226,15 @@ public class SwiftWork {
 	}
 	
 	public static void main(String[] args) throws IOException {
-//		SwiftWork work = new SwiftWork(null);
-		System.out.println(Math.floor(1/2));
-		System.out.println(new String[]{"a", "b"}[(int) Math.floor(5/4)]);
+		File tmp = new File("/tmp/benchit_tmp/test-file-swift-2012_08_13_13_30_33_0807");
+		boolean s = tmp.delete();
+		System.out.println(s);
+//		for (int i = 0; i < 10; i++) {
+//			appendToLocalTmpList(i+"", true);
+//			appendToRemoteTmpList("container:"+i+"file", true);
+//			
+//		}
+		//		SwiftWork work = new SwiftWork(null);
 //		generateRandomFile("1024", "8.0");
 //		toByte(5, "M");
 //		long[] s = generateLogarithmicFileSizeSeries(2, 10, "M", 1, "G");
@@ -287,6 +302,7 @@ public class SwiftWork {
 		
 		return series;
 	}
+	
 	
 	/**
 	 * 
@@ -375,6 +391,10 @@ public class SwiftWork {
 	}
 	
 	
+	/**
+	 * 
+	 * @return BenchIT temp directory
+	 */
 	public static String getBenchITTemp(){
 		return System.getProperty("java.io.tmpdir") + "/benchit_tmp";
 	}
@@ -398,6 +418,7 @@ public class SwiftWork {
 			p = Runtime.getRuntime().exec(command);
 			p.waitFor(); 
 			System.out.println("Random File:" + randfileaddr + " with size: (" + blocksize + " x " + count + ") is created successfully");
+			appendToLocalTmpList(randfileaddr, true);
 			return randfilename;
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -406,5 +427,183 @@ public class SwiftWork {
 		} 
 		return null;
 	}	
+
+
+	private static void appendToRemoteTmpList(String object, boolean close){
+		File logFile = new File(getBenchITTemp(), REMOTE_TEMP_LOG_FILE);
+		try {
+			FileWriter fileWriter = new FileWriter(logFile, true);
+			fileWriter.append(object + '\n');
+			if (close) fileWriter.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	private static void appendToLocalTmpList(String file, boolean close){
+		File logFile = new File(getBenchITTemp(), LOCAL_TEMP_LOG_FILE);
+		try {
+			FileWriter fileWriter = new FileWriter(logFile, true);
+			fileWriter.append(file + '\n' );
+			if (close) fileWriter.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	
+	private static void cleanLocalTemp() {
+		BufferedReader reader;
+		try {
+			reader = new BufferedReader(new FileReader(getBenchITTemp() + "/" + LOCAL_TEMP_LOG_FILE));
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+			System.err.println("Local temp log file is not found, skipping the clean up process.");
+			return;
+		}
+		String line = null;
+		boolean res = false;
+		
+		try {
+			while ((line = reader.readLine()) != null){
+				File tmp = new File(line);
+				if(tmp.delete()){
+					System.out.println("File " + line + " is deleted successfully");
+				} else {
+					System.err.println("File " + line + " is NOT deleted successfully");
+					// In case of a locking
+					linuxDeleteFile(line);
+				}
+				
+			}
+			// Removing the actual local log file
+			reader.close();
+			File local_log = new File(getBenchITTemp(), LOCAL_TEMP_LOG_FILE);
+			local_log.delete();
+			
+		} catch (IOException e) {
+			e.printStackTrace();
+			System.err.println("Something wrong with the local log file, skipping the cleanup process.");
+			return;
+		}
+	}
+	
+	private void cleanRemoteTemp() {
+		BufferedReader reader;
+		try {
+			reader = new BufferedReader(new FileReader(getBenchITTemp() + "/" + REMOTE_TEMP_LOG_FILE));
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+			System.err.println("Remote temp log file is not found, skipping the clean up process.");
+			return;
+		}
+		String line = null;
+		boolean res = false;
+		File tmp = null;
+		
+		try {
+			while ((line = reader.readLine()) != null){
+//				tmp = new File(getBenchITTemp(), line);
+//				if (tmp.delete()) {
+//					System.out.println("File " + line + " is deleted successfully"); 
+//				} else {
+//					System.err.println("File " + line + " is NOT deleted successfully"); 
+//				}
+				if (!client.isLoggedin()) swiftLogin();
+				// container:filename
+				String[] params = line.split(":");
+				try {
+					client.deleteObject(params[0], params[1]);
+					System.out.println("Object " + line + " is removed from storage");
+				} catch (Exception e) {
+					e.printStackTrace();
+					System.err.println("Unable to delete container:file " + line);
+					System.err.println("Skipping to the next container:file");
+				}
+				
+			}
+			
+			// Removing the actual remote log file
+			reader.close();
+			File remote_log = new File(getBenchITTemp(), REMOTE_TEMP_LOG_FILE);
+			remote_log.delete();
+		
+		} catch (IOException e) {
+			e.printStackTrace();
+			System.err.println("Something wrong with the remote log file, skipping the cleanup process.");
+			return;
+		}
+
+	}
+
+	public void cleanUp(int remove_local_tmp, int remove_remote_tmp,	String filename, int max_problem_size, int current_problem_size) {
+		
+//		# 0 -> don't remove
+//		# 1 -> remove files after each run
+//		# 2 -> remove files when the measurement is done
+		switch (remove_local_tmp) {
+		case 0:
+			break;
+		case 1:
+			// do clean
+			
+			break;
+		case 2:
+			if (max_problem_size == current_problem_size){
+				//do clean
+				cleanLocalTemp();
+			}
+			break;
+
+			
+		default:
+			break;
+		}
+		
+//		# 0 -> don't remove
+//		# 1 -> remove files after each run
+//		# 2 -> remove files when the measurement is done
+		switch (remove_remote_tmp) {
+		case 0:
+			break;
+		case 1:
+			// do clean
+			
+			break;
+		case 2:
+			if (max_problem_size == current_problem_size){
+				//do clean
+				cleanRemoteTemp();
+			}
+			break;
+
+			
+		default:
+			break;
+		}
+		
+		
+	}
+	
+	
+	
+	/**
+	 * LINUX Operations
+	 */
+	
+	private static void linuxDeleteFile(String file) {
+		String command = "/bin/rm -f " + file;
+		Process p;
+		try {
+			p = Runtime.getRuntime().exec(command);
+			p.waitFor(); 
+			System.out.println("File :" + file + " is deleted successfully");
+		} catch (Exception e) {
+			e.printStackTrace();
+			System.err.println("File :" + file + " is NOT deleted successfully");
+		} 
+
+	}
+
 	
 }

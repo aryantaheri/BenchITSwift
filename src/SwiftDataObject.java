@@ -16,6 +16,7 @@
 public class SwiftDataObject {
 	private long fileSize = -1;
 	private String username, password, authUrl, container;
+	private int maxProblemSize = -1;
 	
 	
 
@@ -78,6 +79,16 @@ public class SwiftDataObject {
 
 	public void setContainer(String container) {
 		this.container = container;
+	}
+
+
+	public int getMaxProblemSize() {
+		return maxProblemSize;
+	}
+
+
+	public void setMaxProblemSize(int maxProblemSize) {
+		this.maxProblemSize = maxProblemSize;
 	}
 	
 }

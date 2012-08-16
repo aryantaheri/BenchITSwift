@@ -1,1 +1,7 @@
 BenchIT Swift kernel 
+
+There are some linux dependent commands in the code, so it's not natively platform independent.
+
+Temp class loading: 
+$ export CLASSPATH=$CLASSPATH:"~/workspace/BenchITSwift/lib/*"
+$ ./GUI.sh
