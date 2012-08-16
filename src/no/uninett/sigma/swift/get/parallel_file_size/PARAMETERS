@@ -1,0 +1,90 @@
+#!/bin/sh
+#####################################################################
+# BenchIT - Performance Measurement for Scientific Applications
+# Contact: aryan@uninett.no
+#
+# $URL: https://github.com/aryantaheri/BenchITSwift
+# For license details see COPYING in the package base directory
+#####################################################################
+# Kernel: Swift Java kernel
+#####################################################################
+
+ ######################################################################
+ # the following lines are for the benchit-shell B-CARE
+ #
+ #!BENCHIT_VARIABLE BENCHIT_SKELETONS_SKELETON_JAVA_0_0_0_START 1
+ #!BENCHIT_VARIABLE BENCHIT_SKELETONS_SKELETON_JAVA_0_0_0_INCREMENT 1
+ #!BENCHIT_VARIABLE BENCHIT_SKELETONS_SKELETON_JAVA_0_0_0_STEPS 600
+ ######################################################################
+
+ ######################################
+ # BEGINOF skeleton_java/PARAMETERS #
+ ######################################
+
+ BENCHIT_SKELETONS_SKELETON_JAVA_0_0_0_START=1
+ BENCHIT_SKELETONS_SKELETON_JAVA_0_0_0_INCREMENT=1
+ BENCHIT_SKELETONS_SKELETON_JAVA_0_0_0_STEPS=600
+ 
+ 
+#####################################
+# SWIFT server parameter 			#
+#####################################
+SWIFT_AUTH_HOST="http://158.38.172.243:8080/auth/v1.0"
+SWIFT_USER="admin:admin"
+SWIFT_KEY="admin"
+SWIFT_CONTAINER="benchit_container"
+
+
+#####################################
+# File size parameters 				#
+#####################################
+
+# Increment size function
+# 0 -> linear
+# 1 -> log2
+# 2 -> log10
+BENCHIT_KERNEL_FILE_SIZE_INC_FUNC=1
+
+BENCHIT_KERNEL_LOWERBOUND_UNIT="K"
+BENCHIT_KERNEL_LOWERBOUND_VALUE=1
+BENCHIT_KERNEL_UPPERBOUND_UNIT="K"
+BENCHIT_KERNEL_UPPERBOUND_VALUE=30
+
+BENCHIT_KERNEL_LINEAR_INC_UNIT="K"
+BENCHIT_KERNEL_LINEAR_INC_VALUE=3
+
+#####################################
+# View parameters	 				#
+#####################################
+ 
+ # Unit of the file size shown in the plot
+ # "" -> Byte;"K" -> KByte;"M" -> MByte;"G"=GByte 
+BENCHIT_KERNEL_FILESIZE_VIEW_UNIT="K"
+ 
+ # Unit of the measured rate shown in the plot 
+ # "" -> Byte;"K" -> KByte;"M" -> MByte;"G"=GByte 
+BENCHIT_KERNEL_RATE_VIEW_UNIT="M"
+ 
+ # Number of runs per measurement
+BENCHIT_KERNEL_NUMBER_RUNS=2
+
+ 
+#####################################
+# Other parameters	 				#
+#####################################
+# Verify file checksum for each operation
+# 0 -> No, 1 -> Yes
+BENCHIT_VERIFY_CHECKSUM=1
+ 
+# Remove temporary saved files
+# 0 -> don't remove
+# 1 -> remove files after each run
+# 2 -> remove files when the measurement is done
+BENCHIT_REMOVE_LOCAL_TEMP=2
+BENCHIT_REMOVE_REMOTE_TEMP=2
+ 
+ # Additional filename string 
+BENCHIT_FILENAME_COMMENT="Swift"
+ 
+ # Path of the tool time
+ BENCHIT_TOOL_TIME=/usr/bin/time
